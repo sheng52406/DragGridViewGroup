@@ -93,7 +93,7 @@ public class DraggableGridViewPager extends ViewGroup {
     private int mPaddingRight;
     private int mPaddingButtom;
 
-    private int mCurItem; // Index of currently displayed page.
+    private int mCurPage; // Index of currently displayed page.
     private Adapter mAdapter;
     private final DataSetObserver mDataSetObserver = new DataSetObserver() {
         @Override
@@ -331,10 +331,10 @@ public class DraggableGridViewPager extends ViewGroup {
             child.layout(rect.left, rect.top, rect.right, rect.bottom);
             newPositions.add(-1);
         }
-        if (mCurItem > 0 && mCurItem < mPageCount) {
-            final int curItem = mCurItem;
-            mCurItem = 0;
-            setCurrentItem(curItem);
+        if (mCurPage > 0 && mCurPage < mPageCount) {
+            final int curPage = mCurPage;
+            mCurPage = 0;
+            setCurrentPage(curPage);
         }
     }
 
@@ -348,28 +348,28 @@ public class DraggableGridViewPager extends ViewGroup {
         }
     }
 
-    public int getCurrentItem() {
-        return mCurItem;
+    public int getCurrentPage() {
+        return mCurPage;
     }
 
-    public void setCurrentItem(int item) {
-        setCurrentItemInternal(item, false, false);
+    public void setCurrentPage(int item) {
+        setCurrentPageInternal(item, false, false);
     }
 
-    public void setCurrentItem(int item, boolean smoothScroll) {
-        setCurrentItemInternal(item, smoothScroll, false);
+    public void setCurrentPage(int item, boolean smoothScroll) {
+        setCurrentPageInternal(item, smoothScroll, false);
     }
 
-    void setCurrentItemInternal(int item, boolean smoothScroll, boolean always) {
-        setCurrentItemInternal(item, smoothScroll, always, 0);
+    void setCurrentPageInternal(int item, boolean smoothScroll, boolean always) {
+        setCurrentPageInternal(item, smoothScroll, always, 0);
     }
 
-    void setCurrentItemInternal(int item, boolean smoothScroll, boolean always, int velocity) {
+    void setCurrentPageInternal(int item, boolean smoothScroll, boolean always, int velocity) {
         if (mPageCount <= 0) {
             setScrollingCacheEnabled(false);
             return;
         }
-        if (!always && mCurItem == item) {
+        if (!always && mCurPage == item) {
             setScrollingCacheEnabled(false);
             return;
         }
@@ -379,8 +379,8 @@ public class DraggableGridViewPager extends ViewGroup {
         } else if (item >= mPageCount) {
             item = mPageCount - 1;
         }
-        final boolean dispatchSelected = mCurItem != item;
-        mCurItem = item;
+        final boolean dispatchSelected = mCurPage != item;
+        mCurPage = item;
         scrollToItem(item, smoothScroll, velocity, dispatchSelected);
     }
 
@@ -829,7 +829,7 @@ public class DraggableGridViewPager extends ViewGroup {
                     final float pageOffset = (float) offsetPixels / (float) width;
                     final int totalDelta = (int) (x - mInitialMotionX);
                     int nextPage = determineTargetPage(currentPage, pageOffset, initialVelocity, totalDelta);
-                    setCurrentItemInternal(nextPage, true, true, initialVelocity);
+                    setCurrentPageInternal(nextPage, true, true, initialVelocity);
 
                     mActivePointerId = INVALID_POINTER;
                     endDrag();
@@ -847,7 +847,7 @@ public class DraggableGridViewPager extends ViewGroup {
                 if (mLastDragged >= 0) {
                     rearrange();
                 } else if (mIsBeingDragged) {
-                    scrollToItem(mCurItem, true, 0, false);
+                    scrollToItem(mCurPage, true, 0, false);
                     mActivePointerId = INVALID_POINTER;
                     endDrag();
                 }
@@ -911,7 +911,7 @@ public class DraggableGridViewPager extends ViewGroup {
         if (Math.abs(deltaX) > mFlingDistance && Math.abs(velocity) > mMinimumVelocity) {
             targetPage = velocity > 0 ? currentPage : currentPage + 1;
         } else {
-            final float truncator = currentPage >= mCurItem ? 0.4f : 0.6f;
+            final float truncator = currentPage >= mCurPage ? 0.4f : 0.6f;
             targetPage = (int) (currentPage + pageOffset + truncator);
         }
         return targetPage;
@@ -980,7 +980,7 @@ public class DraggableGridViewPager extends ViewGroup {
         if (mAdapter != null) {
             mAdapter.unregisterDataSetObserver(mDataSetObserver);
             removeAllViews();
-            mCurItem = 0;
+            mCurPage = 0;
             scrollTo(0, 0);
         }
         mAdapter = adapter;
@@ -1012,7 +1012,7 @@ public class DraggableGridViewPager extends ViewGroup {
             // touch in padding
             return -1;
         }
-        final int position = mCurItem * mPageSize + row * mColCount + col;
+        final int position = mCurPage * mPageSize + row * mColCount + col;
         if (position < 0 || position >= getChildCount()) {
             // empty item
             return -1;
@@ -1161,10 +1161,10 @@ public class DraggableGridViewPager extends ViewGroup {
     }
 
     private void triggerSwipe(int edge) {
-        if (edge == EDGE_LFET && mCurItem > 0) {
-            setCurrentItem(mCurItem - 1, true);
-        } else if (edge == EDGE_RIGHT && mCurItem < mPageCount - 1) {
-            setCurrentItem(mCurItem + 1, true);
+        if (edge == EDGE_LFET && mCurPage > 0) {
+            setCurrentPage(mCurPage - 1, true);
+        } else if (edge == EDGE_RIGHT && mCurPage < mPageCount - 1) {
+            setCurrentPage(mCurPage + 1, true);
         }
     }
 
@@ -1172,7 +1172,7 @@ public class DraggableGridViewPager extends ViewGroup {
     public void onRestoreInstanceState(Parcelable state) {
         SavedState savedState = (SavedState) state;
         super.onRestoreInstanceState(savedState.getSuperState());
-        mCurItem = savedState.curItem;
+        mCurPage = savedState.curItem;
         requestLayout();
     }
 
@@ -1180,7 +1180,7 @@ public class DraggableGridViewPager extends ViewGroup {
     public Parcelable onSaveInstanceState() {
         Parcelable superState = super.onSaveInstanceState();
         SavedState savedState = new SavedState(superState);
-        savedState.curItem = mCurItem;
+        savedState.curItem = mCurPage;
         return savedState;
     }
 

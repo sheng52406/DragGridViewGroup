@@ -58,13 +58,13 @@ public class DraggableGridViewPagerTestActivity extends Activity {
         mDraggableGridViewPager.setOnPageChangeListener(new DraggableGridViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                Log.v(TAG, "onPageScrolled position=" + position + ", positionOffset=" + positionOffset
+                Log.d(TAG, "onPageScrolled position=" + position + ", positionOffset=" + positionOffset
                         + ", positionOffsetPixels=" + positionOffsetPixels);
             }
 
             @Override
             public void onPageSelected(int position) {
-                Log.i(TAG, "onPageSelected position=" + position);
+                Log.d(TAG, "onPageSelected position=" + position);
             }
 
             @Override
@@ -118,8 +118,15 @@ public class DraggableGridViewPagerTestActivity extends Activity {
             @Override
             public void onClick(View v) {
                 if(mAdapter.getCount()>0){
-                    mDraggableGridViewPager.setCurrentItem(5,true);
+                    mDraggableGridViewPager.setCurrentPage(6,true);
                 }
+            }
+        });
+
+        findViewById(R.id.getCurrentItem).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showToast(String.valueOf(mDraggableGridViewPager.getCurrentPage()));
             }
         });
     }
