@@ -69,12 +69,12 @@ public class DraggableGridViewPager extends ViewGroup {
     public static final int SCROLL_STATE_SETTLING = 2;
 
     private static final long LONG_CLICK_DURATION = 1000; // ms
-    private static final long ANIMATION_DURATION = 450; // ms
+    private static final long ANIMATION_DURATION = 150; // ms
 
-    private static final int EDGE_LFET = 0;
-    private static final int EDGE_RIGHT = 1;
+    private static final int EDGE_LFET = 0;//左边缘
+    private static final int EDGE_RIGHT = 1;//右边缘
 
-    private static final long EDGE_HOLD_DURATION = 1200; // ms
+    private static final long EDGE_HOLD_DURATION = 1200; // ms,边缘保持时间
 
     private int mColCount = DEFAULT_COL_COUNT;
     private int mRowCount = DEFAULT_ROW_COUNT;
@@ -85,7 +85,7 @@ public class DraggableGridViewPager extends ViewGroup {
     private int mGridWidth;
     private int mGridHeight;
     private int mMaxOverScrollSize;
-    private int mEdgeSize;
+    private int mEdgeSize;//边缘检测宽度
 
     // internal paddings
     private int mPaddingLeft;
@@ -93,7 +93,7 @@ public class DraggableGridViewPager extends ViewGroup {
     private int mPaddingRight;
     private int mPaddingButtom;
 
-    private int mCurPage; // Index of currently displayed page.
+    private int mCurPage; // 当前显示页的索引。
     private Adapter mAdapter;
     private final DataSetObserver mDataSetObserver = new DataSetObserver() {
         @Override
@@ -141,7 +141,7 @@ public class DraggableGridViewPager extends ViewGroup {
     private int mLastEdge = -1;
     private long mLastEdgeTime = Long.MAX_VALUE;
 
-    private ArrayList<Integer> newPositions = new ArrayList<Integer>();
+    private ArrayList<Integer> newPositions = new ArrayList<>();
 
     private boolean mCalledSuper;
 
@@ -245,7 +245,7 @@ public class DraggableGridViewPager extends ViewGroup {
 
         mGridGap = (int) (DEFAULT_GRID_GAP * density);
 
-        // internal paddings
+        //内padding
         mPaddingLeft = getPaddingLeft();
         mPaddingTop = getPaddingTop();
         mPaddingRight = getPaddingRight();
@@ -270,10 +270,18 @@ public class DraggableGridViewPager extends ViewGroup {
         super.onDetachedFromWindow();
     }
 
+    /**
+     * 获取列数
+     * @return
+     */
     public int getColCount() {
         return mColCount;
     }
 
+    /**
+     * 设置列数
+     * @param colCount
+     */
     public void setColCount(int colCount) {
         if (colCount < 1) {
             colCount = 1;
@@ -283,10 +291,18 @@ public class DraggableGridViewPager extends ViewGroup {
         requestLayout();
     }
 
+    /**
+     * 获取行数
+     * @return
+     */
     public int getRowCount() {
         return mRowCount;
     }
 
+    /**
+     * 设置行数
+     * @param rowCount
+     */
     public void setRowCount(int rowCount) {
         if (rowCount < 1) {
             rowCount = 1;
@@ -296,10 +312,18 @@ public class DraggableGridViewPager extends ViewGroup {
         requestLayout();
     }
 
+    /**
+     * 获取grid item间的间隔
+     * @return
+     */
     public int getGridGap() {
         return mGridGap;
     }
 
+    /**
+     * 设置grid item间的间隔
+     * @param gridGap
+     */
     public void setGridGap(int gridGap) {
         if (gridGap < 0) {
             gridGap = 0;
@@ -308,6 +332,10 @@ public class DraggableGridViewPager extends ViewGroup {
         requestLayout();
     }
 
+    /**
+     * 获取总页数
+     * @return
+     */
     public int getPageCount() {
         return (getChildCount() + mPageSize - 1) / mPageSize;
     }
@@ -320,6 +348,7 @@ public class DraggableGridViewPager extends ViewGroup {
         mGridHeight = (getHeight() - mPaddingTop - mPaddingButtom - (mRowCount - 1) * mGridGap) / mRowCount;
         mGridWidth = mGridHeight = Math.min(mGridWidth, mGridHeight);
         mMaxOverScrollSize = mGridWidth / 2;
+        //边缘检测大小为item的一半宽度
         mEdgeSize = mGridWidth / 2;
         newPositions.clear();
         for (int i = 0; i < childCount; i++) {
@@ -352,10 +381,19 @@ public class DraggableGridViewPager extends ViewGroup {
         return mCurPage;
     }
 
+    /**
+     * 跳转到指定索引的显示页，默认不做动画
+     * @param item 指定页
+     */
     public void setCurrentPage(int item) {
         setCurrentPageInternal(item, false, false);
     }
 
+    /**
+     * 跳转到指定索引的显示页
+     * @param item 指定页
+     * @param smoothScroll 是否做动画
+     */
     public void setCurrentPage(int item, boolean smoothScroll) {
         setCurrentPageInternal(item, smoothScroll, false);
     }
@@ -459,7 +497,7 @@ public class DraggableGridViewPager extends ViewGroup {
             duration = 4 * Math.round(1000 * Math.abs(distance / velocity));
         } else {
             final float pageDelta = (float) Math.abs(dx) / width;
-            duration = (int) ((pageDelta + 1) * 100);
+            duration = (int) ((pageDelta + 1) * 250);
         }
         duration = Math.min(duration, MAX_SETTLE_DURATION);
 
@@ -483,7 +521,7 @@ public class DraggableGridViewPager extends ViewGroup {
                 }
             }
 
-            // Keep on drawing until the animation has finished.
+            // 继续画，直到动画结束
             ViewCompat.postInvalidateOnAnimation(this);
             return;
         }
@@ -554,16 +592,12 @@ public class DraggableGridViewPager extends ViewGroup {
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
-        /*
-		 * This method JUST determines whether we want to intercept the motion. If we return true, onMotionEvent will be
-		 * called and we do the actual scrolling there.
-		 */
-
+        //决定我们是否要拦截运动
         final int action = ev.getAction() & MotionEventCompat.ACTION_MASK;
 
-        // Always take care of the touch gesture being complete.
+        // 总是照顾的触摸手势的完成
         if (action == MotionEvent.ACTION_CANCEL || action == MotionEvent.ACTION_UP) {
-            // Release the drag.
+            // 释放拖动
             DEBUG_LOG("Intercept done!");
             mIsBeingDragged = false;
             mIsUnableToDrag = false;
@@ -590,9 +624,8 @@ public class DraggableGridViewPager extends ViewGroup {
 
         switch (action) {
             case MotionEvent.ACTION_MOVE: {
-			/*
-			 * mIsBeingDragged == false, otherwise the shortcut would have caught it. Check whether the user has moved
-			 * far enough from his original down touch.
+            /*
+             * mIsBeingDragged == false, 否则，快捷方式会抓住它。检查用户是否已经从原来的下降到足够远的触摸。
 			 */
 
 			/*
@@ -600,7 +633,7 @@ public class DraggableGridViewPager extends ViewGroup {
 			 */
                 final int activePointerId = mActivePointerId;
                 if (activePointerId == INVALID_POINTER) {
-                    // If we don't have a valid id, the touch down wasn't on content.
+                    // 如果我们没有一个有效的id，触摸的不是有效内容。
                     break;
                 }
 
@@ -630,7 +663,7 @@ public class DraggableGridViewPager extends ViewGroup {
                     mIsUnableToDrag = true;
                 }
                 if (mIsBeingDragged) {
-                    // Scroll to follow the motion event
+                    // 滚动跟踪运动事件
                     if (performDrag(x)) {
                         ViewCompat.postInvalidateOnAnimation(this);
                     }
@@ -639,9 +672,8 @@ public class DraggableGridViewPager extends ViewGroup {
             }
 
             case MotionEvent.ACTION_DOWN: {
-			/*
-			 * Remember location of down touch. ACTION_DOWN always refers to pointer index 0.
-			 */
+
+			    //记下触摸的位置. ACTION_DOWN总是刷新pointer为0。
                 mLastMotionX = mInitialMotionX = ev.getX();
                 mLastMotionY = mInitialMotionY = ev.getY();
                 mActivePointerId = MotionEventCompat.getPointerId(ev, 0);
@@ -692,7 +724,6 @@ public class DraggableGridViewPager extends ViewGroup {
         }
 
         if (mPageCount <= 0) {
-            // Nothing to present or scroll; nothing to touch.
             return false;
         }
 
@@ -707,7 +738,7 @@ public class DraggableGridViewPager extends ViewGroup {
         switch (action & MotionEventCompat.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN: {
                 mScroller.abortAnimation();
-                // Remember where the motion event started
+                // 记住运动事件开始的地方
                 mLastMotionX = mInitialMotionX = ev.getX();
                 mLastMotionY = mInitialMotionY = ev.getY();
                 mActivePointerId = MotionEventCompat.getPointerId(ev, 0);
@@ -736,21 +767,23 @@ public class DraggableGridViewPager extends ViewGroup {
                 final float y = MotionEventCompat.getY(ev, pointerIndex);
 
                 if (mLastDragged >= 0) {
-                    // change draw location of dragged visual
+                    //重新绘制拖动的item的视觉
                     final View v = getChildAt(mLastDragged);
                     final int l = getScrollX() + (int) x - v.getWidth() / 2;
                     final int t = getScrollY() + (int) y - v.getHeight() / 2;
                     v.layout(l, t, l + v.getWidth(), t + v.getHeight());
 
-                    // check for new target hover
+                    //检查新的目标悬停
                     if (mScrollState == SCROLL_STATE_IDLE) {
                         final int target = getTargetByXY((int) x, (int) y);
+                        //拖动到新位置，并符合条件
                         if (target != -1 && mLastTarget != target) {
+                            //开始做移位动画
                             animateGap(target);
                             mLastTarget = target;
                             DEBUG_LOG("Moved to mLastTarget=" + mLastTarget);
                         }
-                        // edge holding
+                        // 边缘保持
                         final int edge = getEdgeByXY((int) x, (int) y);
                         if (mLastEdge == -1) {
                             if (edge != mLastEdge) {
@@ -762,7 +795,9 @@ public class DraggableGridViewPager extends ViewGroup {
                                 mLastEdge = -1;
                             } else {
                                 if ((System.currentTimeMillis() - mLastEdgeTime) >= EDGE_HOLD_DURATION) {
+                                    //触感反馈
                                     performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+                                    //换页
                                     triggerSwipe(edge);
                                     mLastEdge = -1;
                                 }
@@ -794,11 +829,14 @@ public class DraggableGridViewPager extends ViewGroup {
                     DEBUG_LOG("Moved to currentPosition=" + currentPosition);
                     if (currentPosition == mLastPosition) {
                         if ((System.currentTimeMillis() - mLastDownTime) >= LONG_CLICK_DURATION) {
+                            //回调长按事件，如果没有注册长按事件，则不处理，或者长按事件返回false,也不处理。
                             if (onItemLongClick(currentPosition)) {
                                 performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+                                //记录要拖动的位置
                                 mLastDragged = mLastPosition;
                                 requestParentDisallowInterceptTouchEvent(true);
                                 mLastTarget = -1;
+                                //开始拖动动画
                                 animateDragged();
                                 mLastPosition = -1;
                             }
@@ -836,6 +874,7 @@ public class DraggableGridViewPager extends ViewGroup {
                 } else if (mLastPosition >= 0) {
                     final int currentPosition = getPositionByXY((int) x, (int) y);
                     DEBUG_LOG("Touch up!!! currentPosition=" + currentPosition);
+                    //单击事件
                     if (currentPosition == mLastPosition) {
                         onItemClick(currentPosition);
                     }
@@ -957,27 +996,38 @@ public class DraggableGridViewPager extends ViewGroup {
         }
     }
 
+    /**
+     * 数据集发生变化
+     */
     private void dataSetChanged() {
         DEBUG_LOG("dataSetChanged");
         for (int i = 0; i < getChildCount() && i < mAdapter.getCount(); i++) {
             final View child = getChildAt(i);
             final View newChild = mAdapter.getView(i, child, this);
+            //视图元素与adapter元素不匹配，重新添加
             if (newChild != child) {
                 removeViewAt(i);
                 addView(newChild, i);
             }
         }
+        //adapter增加数据，添加到视图中
         for (int i = getChildCount(); i < mAdapter.getCount(); i++) {
             final View child = mAdapter.getView(i, null, this);
             addView(child);
         }
+        //adapter移除数据，要从视图中移除
         while (getChildCount() > mAdapter.getCount()) {
             removeViewAt(getChildCount() - 1);
         }
     }
 
+    /**
+     * 设置adapter
+     * @param adapter
+     */
     public void setAdapter(Adapter adapter) {
         if (mAdapter != null) {
+            //注销数据监听
             mAdapter.unregisterDataSetObserver(mDataSetObserver);
             removeAllViews();
             mCurPage = 0;
@@ -985,6 +1035,7 @@ public class DraggableGridViewPager extends ViewGroup {
         }
         mAdapter = adapter;
         if (mAdapter != null) {
+            //注册数据监听回调接口
             mAdapter.registerDataSetObserver(mDataSetObserver);
             for (int i = 0; i < mAdapter.getCount(); i++) {
                 final View child = mAdapter.getView(i, null, this);
@@ -1009,12 +1060,12 @@ public class DraggableGridViewPager extends ViewGroup {
                 y < mPaddingTop || y >= (mPaddingTop + row * (mGridHeight + mGridGap) + mGridHeight) ||
                 col < 0 || col >= mColCount ||
                 row < 0 || row >= mRowCount) {
-            // touch in padding
+            // 触摸的是空白区域
             return -1;
         }
         final int position = mCurPage * mPageSize + row * mColCount + col;
         if (position < 0 || position >= getChildCount()) {
-            // empty item
+            // 超出范围
             return -1;
         }
         return position;
@@ -1062,6 +1113,9 @@ public class DraggableGridViewPager extends ViewGroup {
         return i;
     }
 
+    /**
+     * 开始做拖动动画
+     */
     private void animateDragged() {
         if (mLastDragged >= 0) {
             final View v = getChildAt(mLastDragged);
@@ -1088,6 +1142,10 @@ public class DraggableGridViewPager extends ViewGroup {
         }
     }
 
+    /**
+     * 换位动画
+     * @param target
+     */
     private void animateGap(int target) {
         for (int i = 0; i < getChildCount(); i++) {
             View v = getChildAt(i);
@@ -1097,8 +1155,10 @@ public class DraggableGridViewPager extends ViewGroup {
 
             int newPos = i;
             if (mLastDragged < target && i >= mLastDragged + 1 && i <= target) {
+                //从索引较小位置拖到索引较大位置，比如0-->3
                 newPos--;
             } else if (target < mLastDragged && i >= target && i < mLastDragged) {
+                //从索引较大位置拖到索引较小位置，比如3-->0
                 newPos++;
             }
 
@@ -1111,7 +1171,7 @@ public class DraggableGridViewPager extends ViewGroup {
                 continue;
             }
 
-            // animate
+            // 从原位置到新位置做动画
             DEBUG_LOG("animateGap from=" + oldPos + ", to=" + newPos);
             final Rect oldRect = getRectByPosition(oldPos);
             final Rect newRect = getRectByPosition(newPos);
@@ -1127,10 +1187,14 @@ public class DraggableGridViewPager extends ViewGroup {
             v.clearAnimation();
             v.startAnimation(translate);
 
+            //记录换位后的位置
             newPositions.set(i, newPos);
         }
     }
 
+    /**
+     * 重新布置位置
+     */
     private void rearrange() {
         if (mLastDragged >= 0) {
             for (int i = 0; i < getChildCount(); i++) {
@@ -1140,6 +1204,7 @@ public class DraggableGridViewPager extends ViewGroup {
                 final View child = getChildAt(mLastDragged);
                 removeViewAt(mLastDragged);
                 addView(child, mLastTarget);
+                //成功换位，回调监听方法
                 if (mOnRearrangeListener != null) {
                     mOnRearrangeListener.onRearrange(mLastDragged, mLastTarget);
                 }
@@ -1160,6 +1225,10 @@ public class DraggableGridViewPager extends ViewGroup {
         return -1;
     }
 
+    /**
+     * 触发换页
+     * @param edge
+     */
     private void triggerSwipe(int edge) {
         if (edge == EDGE_LFET && mCurPage > 0) {
             setCurrentPage(mCurPage - 1, true);
